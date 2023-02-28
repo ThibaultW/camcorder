@@ -2,7 +2,6 @@
 # Setup the camcorder before every test
 #
 RSpec.configure do |config|
-
   recording_name_for = lambda do |metadata|
     description = if metadata[:description].empty?
                     # we have an "it { is_expected.to be something }" block

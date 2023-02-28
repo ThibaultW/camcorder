@@ -1,7 +1,5 @@
 module Camcorder
-
   class Configuration
-
     attr_accessor :recordings_dir
     attr_accessor :verify_recordings
 
@@ -9,7 +7,5 @@ module Camcorder
       @recordings_dir = ''
       @verify_recordings = true
     end
-
   end
-
 end

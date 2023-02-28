@@ -2,9 +2,7 @@ require 'yaml'
 require 'camcorder/recording'
 
 module Camcorder
-
   class Recorder
-
     attr_reader :recordings
     attr_reader :filename
 
@@ -15,7 +13,7 @@ module Camcorder
       @verify_recordings = verify_recordings
     end
 
-    def transaction(&block)
+    def transaction(&_block)
       start
       yield
     ensure
@@ -23,8 +21,8 @@ module Camcorder
     end
 
     def start
-      if File.exists?(filename)
-        @recordings = YAML.load_file(filename)
+      if File.exist?(filename)
+        @recordings = YAML.unsafe_load_file(filename)
         @replaying = true
       else
         @recordings = {}
@@ -34,8 +32,9 @@ module Camcorder
 
     def commit
       return unless @changed
+
       FileUtils.mkdir_p File.dirname(filename)
-      File.open(filename, 'w') {|f| YAML.dump(recordings, f) }
+      File.open(filename, 'w') { |f| YAML.dump(recordings, f) }
     end
 
     def record(key, &block)
@@ -72,7 +71,5 @@ module Camcorder
         true
       end
     end
-
   end
-
 end

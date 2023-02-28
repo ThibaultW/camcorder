@@ -1,4 +1,4 @@
-require "camcorder/version"
+require 'camcorder/version'
 require 'camcorder/errors'
 require 'camcorder/proxy'
 require 'camcorder/recorder'
@@ -10,49 +10,52 @@ require 'camcorder/configuration'
 # captured by VCR.
 #
 module Camcorder
-  
   def self.default_recorder
     @default_recorder
   end
-  
+
   def self.default_recorder=(value)
     @default_recorder = value
   end
-  
+
   def self.config
     @config ||= Configuration.new
   end
-  
+
   #
   # Creates a proxy subclass for the particular class
   #
-  def self.proxy_class(klass, recorder=nil, &block)
+  def self.proxy_class(klass, recorder = nil, &block)
     Class.new(Proxy) do
       class << self
         attr_reader :klass
         attr_reader :recorder
       end
+
       @klass = klass
       @recorder = recorder
+
       def initialize(*args)
         recorder = self.class.recorder || Camcorder.default_recorder
         super(recorder, self.class.klass, *args)
       end
-      self.class_eval &block if block
+
+      class_eval(&block) if block
     end
   end
-  
+
   #
   # Rewrites the `new` method on the passed in class to always return proxies.
   #
-  def self.intercept_constructor(klass, recorder=nil, &block)
+  def self.intercept_constructor(klass, recorder = nil, &block)
     proxy_class = self.proxy_class(klass, recorder) do
       def _initialize
         @instance ||= klass._new(*@init_args)
       end
-      self.class_eval &block if block
+
+      class_eval(&block) if block
     end
-    
+
     klass.class_eval do
       @proxy_class = proxy_class
       class << self
@@ -63,7 +66,7 @@ module Camcorder
       end
     end
   end
-  
+
   def self.deintercept_constructor(klass)
     klass.class_eval do
       class << self
@@ -72,20 +75,20 @@ module Camcorder
       end
     end
   end
-  
+
   #
   # Similar to `VCR.use_cassette`
   #
-  def self.use_recordings(klass, name, &block)
-    recorder = Recorder.new(File.join(self.config.recordings_dir, "#{name}.yaml"))
+  def self.use_recordings(klass, name, &_block)
+    recorder = Recorder.new(File.join(config.recordings_dir, "#{name}.yaml"))
     begin
-      self.intercept_constructor(klass, recorder)
-    
+      intercept_constructor(klass, recorder)
+
       recorder.transaction do
         yield
       end
     ensure
-      self.deintercept_constructor(klass)
+      deintercept_constructor(klass)
     end
   end
 end
